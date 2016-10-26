@@ -1,0 +1,56 @@
+@CHARSET "ISO-8859-1";
+table {
+	width: 100%;
+	height: 200px;
+}
+tr:nth-child(even) td {
+	border-bottom: 1px solid #ddd;
+}
+
+/*body, html {*/
+html, body {
+	position: fixed;
+	width: 100%;
+}
+div#msgDiv {
+	display: block;
+	overflow: scroll;
+	height: 140px;
+}
+div#msgDiv[data-debug="false"] {
+	display: none;
+}
+span.answer-count[data-count="0"] {
+	display: none;
+}
+div.gummy-bear {
+	vertical-align: top;
+	display: inline-block;
+}
+canvas.gummy-bear {
+	display: inline-block;
+}
+/* html {
+	width: 97%;
+	background-image: url(../images/stripes-orange-blue-background.jpg)
+}
+body {
+	width: 94%;
+	background-image: url(../images/background-pattern-41.jpg)
+}
+div#home-page {
+	width: 90%;
+}
+canvas {
+	width: 350px;
+}
+ */
+/* body, html {
+	height: 100%;
+	width: 100%;
+}
+
+div#home-page {
+	height: calc(100% - 1px);
+	width: 100%;
+} */

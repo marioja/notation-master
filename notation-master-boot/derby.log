@@ -1,0 +1,13 @@
+----------------------------------------------------------------
+Wed Oct 26 13:11:27 EDT 2016:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.12.1.1 - (1704137): instance a816c00e-0158-01f9-a4ce-00000b510ad8 
+on database directory memory:D:\Users\mario\Documents\sts\finance\notation-master-boot\testdb with class loader sun.misc.Launcher$AppClassLoader@764c12b6 
+Loaded from file:/C:/Users/mario/.m2/repository/org/apache/derby/derby/10.12.1.1/derby-10.12.1.1.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_101-b13
+user.dir=D:\Users\mario\Documents\sts\finance\notation-master-boot
+os.name=Windows 7
+os.arch=amd64
+os.version=6.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
