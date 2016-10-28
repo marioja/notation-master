@@ -30,6 +30,27 @@ div.gummy-bear {
 canvas.gummy-bear {
 	display: inline-block;
 }
+.horizontal-top {
+	vertical-align: top;
+	display: inline-block;
+}
+.horizontal-top:nth-of-type(2) {
+	width: calc(100% - 400px);
+}
+.ui-li-static.ui-collapsible > .ui-collapsible-heading {
+    margin: 0;
+}
+.ui-li-static.ui-collapsible {
+    padding: 0;
+}
+.ui-li-static.ui-collapsible > .ui-collapsible-heading > .ui-btn {
+    border-top-width: 0;
+}
+.ui-li-static.ui-collapsible > .ui-collapsible-heading.ui-collapsible-heading-collapsed > .ui-btn,
+.ui-li-static.ui-collapsible > .ui-collapsible-content {
+    border-bottom-width: 0;
+}
+
 /* html {
 	width: 97%;
 	background-image: url(../images/stripes-orange-blue-background.jpg)
