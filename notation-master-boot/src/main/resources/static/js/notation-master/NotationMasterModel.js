@@ -133,15 +133,16 @@ NotationMaster.modelController = (function($){
 	var currentAudio;
 	var currentNote;
 	
-	var renderPage = function(note) {
+	var renderMusic = function(note) {
 		currentNote = note;
 		renderStaff($(contentCanvasSelector)[0])
 		renderNote(note)
 	}
-	var renderInitial = function(clef) {
+	var renderInitialMusic = function(clef) {
 		currentClef=clef
 		setClefText()
-		renderPage(currentClef === clefs.treble ? notes[clefs.treble][14] : notes[clefs.bass][2])
+//		renderPage(currentClef === clefs.treble ? notes[clefs.treble][14] : notes[clefs.bass][2])
+		pickANote()
 	};
 	
 	var renderStaff = function(canvas) {
@@ -247,7 +248,7 @@ NotationMaster.modelController = (function($){
 				e.target.title = msg
 				msgDiv.addText(msg)
 			}
-			if (n!==oldN) renderPage(notes[currentClef][n])
+			if (n!==oldN) renderMusic(notes[currentClef][n])
 			oldN=n;
 		} else {
 			//e.target.title = ""
@@ -346,7 +347,6 @@ NotationMaster.modelController = (function($){
 				x/scale, y/scale, pieceWidth/scale, pieceHeight/scale
 			)
 		}
-//		context.drawImage(img, 0, 0)
 	}
 	
 	var setClefText = function() {
@@ -364,6 +364,115 @@ NotationMaster.modelController = (function($){
 	}
 	
 	var switchClef = "main-switch-clef"
+	var selectLimits = "main-select-limits"
+	var selectHigh = "-high"
+	var selectLow = "-low"
+		
+	var createNotesSelect = function(clef, name) {
+		var ss=''
+		ss+='<label for="'+name+'">'+name+'</label>'
+		ss+='<select name="'+name+'" id="'+name+'">'
+		for (var i = 0; i < 17; i++) {
+			ss+='<option value="'+i+'">'+notes[clef][i].noteWithoutAnnotation.keys[0]+'</option>'
+		}
+		ss+='</select>'
+		return ss
+	}
+	var createLimits = function() {
+		var ss=''
+		ss+='<fieldset data-role="controlgroup" data-type="horizontal">'
+		ss+='<h3>Treble low/high</h3>'
+		ss+=createNotesSelect(clefs.treble, clefs.treble+selectLow)
+		ss+=createNotesSelect(clefs.treble, clefs.treble+selectHigh)
+		ss+='</fieldset>'
+		ss+='<fieldset data-role="controlgroup" data-type="horizontal">'
+		ss+='<h3>Bass low/high</h3>'
+		ss+=createNotesSelect(clefs.bass, clefs.bass+selectLow)
+		ss+=createNotesSelect(clefs.bass, clefs.bass+selectHigh)
+		ss+='</fieldset>'
+		return ss;
+	}
+	
+	var setNotesOptionsStatus = function(select, up, selectedValue) {
+		var options=select.find('option')
+		var disabledSetting=false
+		if (up) disabledSetting=true
+		for (var i = 0; i < options.length; i++) {
+			var o=$(options[i])
+			if (up && parseInt(o.val()) === selectedValue) disabledSetting=false
+			if (disabledSetting) o.attr('disabled','disabled')
+			else o.removeAttr('disabled')
+			if (!up && parseInt(o.val()) === selectedValue) disabledSetting=true
+		}
+	}
+	
+	var trebleLow, trebleHigh, bassLow, bassHigh
+	
+	var setNotesLimitsSelects = function() {
+//		trebleLow=$('#'+clefs.treble+selectLow)
+//		trebleHigh=$('#'+clefs.treble+selectHigh)
+//		bassLow=$('#'+clefs.bass+selectLow)
+//		bassHigh=$('#'+clefs.bass+selectHigh)
+		setNotesOptionsStatusLimits($('#'+clefs.treble+selectLow), false)
+		setNotesOptionsStatusLimits($('#'+clefs.treble+selectHigh), false)
+		setNotesOptionsStatusLimits($('#'+clefs.bass+selectLow), false)
+		setNotesOptionsStatusLimits($('#'+clefs.bass+selectHigh), false)
+//		trebleLow.val(learnNotesLimit.treble.low)
+//		setNotesOptionsStatus(trebleHigh, false, trebleLow.val())
+//		trebleHigh.val(learnNotesLimit.treble.high)
+//		setNotesOptionsStatus(trebleLow, true, trebleHigh.val())
+//		bassLow.val(learnNotesLimit.bass.low)
+//		setNotesOptionsStatus(bassHigh, false, bassLow.val())
+//		bassHigh.val(learnNotesLimit.bass.high)
+//		setNotesOptionsStatus(bassLow, true, bassHigh.val())
+	}
+
+	var setNotesOptionsStatusLimits = function(select, updateLimits) {
+		var limit, up, correspondingSelect
+		switch (select.attr('name')) {
+			case clefs.treble+selectLow:
+				correspondingSelect=$('#'+clefs.treble+selectHigh)
+				if (updateLimits) learnNotesLimit.treble.low=parseInt(select.val())
+				limit=learnNotesLimit.treble.low
+				up=false
+				break;
+				
+			case clefs.treble+selectHigh:
+				correspondingSelect=$('#'+clefs.treble+selectLow)
+				if (updateLimits) learnNotesLimit.treble.high=parseInt(select.val())
+				limit=learnNotesLimit.treble.high
+				up=true
+				break;
+				
+			case clefs.bass+selectLow:
+				correspondingSelect=$('#'+clefs.bass+selectHigh)
+				if (updateLimits) learnNotesLimit.bass.low=parseInt(select.val())
+				limit=learnNotesLimit.bass.low
+				up=false
+				break;
+				
+			case clefs.bass+selectHigh:
+				correspondingSelect=$('#'+clefs.bass+selectLow)
+				if (updateLimits) learnNotesLimit.bass.high=parseInt(select.val())
+				limit=learnNotesLimit.bass.high
+				up=true
+				break;
+			default:
+				
+				break;
+		}
+		select.val(limit)
+		setNotesOptionsStatus(correspondingSelect, up, limit)
+		
+	}
+	
+	var changeLimits = function(e) {
+		setNotesOptionsStatusLimits($(e.target), true)
+		initializeNotes()
+		setNotesLimitsSelects()
+		
+	}
+
 	var renderOptions = function() {
 		var gummydiv=$(contentDivSelector).find('div.'+gummyBearClass)
 		gummydiv=$(gummydiv[0])
@@ -375,11 +484,16 @@ NotationMaster.modelController = (function($){
 		cl+='<h2 id="'+switchClef+'">clef</h2><ul data-role="listview">'
 		cl+='<li><a data-ajax="false" href="javascript:void(0)" id="'+setTreble+'"><img src="images/treble.png"></a></li>'
 		cl+='<li><a data-ajax="false" href="javascript:void(0)" id="'+setBass+'"><img src="images/bass.png"></a></li>'
-		cl+='</ul></li>'
+		cl+='</ul>'
+		cl+='<li data-role="collapsible" data-iconpos="right" data-inset="false">'
+		cl+='<h2 id="'+selectLimits+'">Limits</h2>'
+		cl+=createLimits()
+		cl+='</li></li>'
 		cl+='</ul>'
 		gummydiv.append(cl)
-		$(document).on('click','#'+setTreble,function(e){renderInitial(clefs.treble)})
-		$(document).on('click','#'+setBass,function(e){renderInitial(clefs.bass)})
+		$('#'+selectLimits).parent().on('change', 'select', changeLimits)
+		$(document).on('click','#'+setTreble,function(e){renderInitialMusic(clefs.treble)})
+		$(document).on('click','#'+setBass,function(e){renderInitialMusic(clefs.bass)})
 	}
 	
 	var renderGummyBear = function(index) {
@@ -407,18 +521,18 @@ NotationMaster.modelController = (function($){
 	
 	var learnNotesLimit = {
 		treble: {
-			low: 10,
-			high: 14
+			high: 10,
+			low: 14
 		},
 		bass: {
-			low: 2,
-			high: 6
+			high: 2,
+			low: 6
 		}
 	}
 	
 	var createLearnNotes = function(clef) {
 		var aNotes={}
-		for (var n = learnNotesLimit[clef].low; n <= learnNotesLimit[clef].high; n++) {
+		for (var n = learnNotesLimit[clef].high; n <= learnNotesLimit[clef].low; n++) {
 			aNotes[n]=notes[clef][n]
 		}
 		return aNotes
@@ -433,7 +547,7 @@ NotationMaster.modelController = (function($){
 		var aNote=learnNotes[currentClef][k[i]]
 		if (k.length>1) delete learnNotes[currentClef][k[i]]
 		else learnNotes[currentClef] = createLearnNotes(currentClef) // replenish colors
-		renderPage(aNote)
+		renderMusic(aNote)
 	}
 	
 	var prevNote=""
@@ -454,21 +568,26 @@ NotationMaster.modelController = (function($){
 		prevNoteObj=currentNote
 		if (mode === Mode.learn) pickANote()
 	}
-	
-	var init = function(theDebug) {
-		debug=theDebug
-		var cc=$(contentDivSelector)
-		renderAnswer(cc)
-		var d=$(document)
-		cc.append('<div data-debug="'+debug+'" id="msgDiv"/>')
-		msgDiv=$("#msgDiv")
+
+	var initializeNotes = function() {
 		notes[clefs.treble]=createAllNotes(clefs.treble)
 		notes[clefs.bass]=createAllNotes(clefs.bass)
 		learnNotes = {
 			treble: createLearnNotes(clefs.treble),
 			bass: createLearnNotes(clefs.bass)
 		}
-		renderInitial(clefs.treble);
+	}
+	
+	var init = function(theDebug) {
+		debug=theDebug
+		var cc=$(contentDivSelector)
+		var d=$(document)
+		cc.append('<div data-debug="'+debug+'" id="msgDiv"/>')
+		msgDiv=$("#msgDiv")
+		initializeNotes()
+		renderAnswer(cc)
+		setNotesLimitsSelects()
+		renderInitialMusic(clefs.treble);
 //		for (var i = 5; i < 36; i+=6) {
 //			renderGummyBear(i)
 //		}
