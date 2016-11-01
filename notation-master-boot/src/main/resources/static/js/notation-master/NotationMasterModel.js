@@ -519,14 +519,22 @@ NotationMaster.modelController = (function($){
 		
 	}
 	
+	var findNoteIndex = function(noteArray, note) {
+		for (var i = 0; i < noteArray.length; i++) {
+			if (noteArray[i].noteWithoutAnnotation.keys[0] === note) return i
+		}
+		throw note+" not found"
+	}
+	
+	// initialized in initializeNotes
 	var learnNotesLimit = {
 		treble: {
-			high: 10,
-			low: 14
+			high: 0,
+			low: 0
 		},
 		bass: {
-			high: 2,
-			low: 6
+			high: 0,
+			low: 0
 		}
 	}
 	
@@ -571,7 +579,11 @@ NotationMaster.modelController = (function($){
 
 	var initializeNotes = function() {
 		notes[clefs.treble]=createAllNotes(clefs.treble)
+		learnNotesLimit[clefs.treble].high = pageTrebleHigh === "null" ? 10 : findNoteIndex(notes[clefs.treble], pageTrebleHigh)
+		learnNotesLimit[clefs.treble].low = pageTrebleLow === "null" ? 14 : findNoteIndex(notes[clefs.treble], pageTrebleLow)
 		notes[clefs.bass]=createAllNotes(clefs.bass)
+		learnNotesLimit[clefs.bass].high = pageBassHigh === "null" ? 2 : findNoteIndex(notes[clefs.bass], pageBassHigh)
+		learnNotesLimit[clefs.bass].low = pageBassLow === "null" ? 6 : findNoteIndex(notes[clefs.bass], pageBassLow)		
 		learnNotes = {
 			treble: createLearnNotes(clefs.treble),
 			bass: createLearnNotes(clefs.bass)
