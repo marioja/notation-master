@@ -11,7 +11,7 @@ NotationMaster.modelController = (function($){
 	var vf = Vex.Flow;
 	var contentCanvasSelector = "#home-content-canvas"
 	var contentDivSelector = "#home-content"
-	var checkAnswerButtonSelector = "#check-answer"
+	var checkAnswerButton = "check-answer"
 	var topRowClass = "horizontal-top"
 	var answerCount = "answer-count"
 	var checkAnswerInputName = "notes-name"
@@ -48,14 +48,15 @@ NotationMaster.modelController = (function($){
 		var fn="audio/"+note+".mp3"
 		//result.audio = new Audio(fn)
 		msgDiv.addText("loaded "+fn)
-		result.getAudio = function() {
+		result.getAudio = function(displayProgress) {
+			if (typeof displayProgress === "undefined") displayProgress=true
 			if (typeof this.audio === "undefined") {
 				this.audio = new Audio()
 				$(this.audio).on('loadstart',function(e){
-					$.mobile.loading("show")
+					if (displayProgress) $.mobile.loading("show")
 				})
 				$(this.audio).on('playing',function(e){
-					$.mobile.loading("hide")
+					if (displayProgress) $.mobile.loading("hide")
 				})
 				this.audio.src=fn
 				msgDiv.addText("loaded "+fn)
@@ -273,24 +274,26 @@ NotationMaster.modelController = (function($){
 	}
 	var renderAnswer = function(contentDiv){
 		contentDiv.append('<div class="'+topRowClass+'"><div class="'+gummyBearClass+'"/></div>')
+		// note answer radio buttons
 		contentDiv.append('<fieldset data-role="controlgroup" data-type="horizontal"></fieldset>')
 		var fieldSet=contentDiv.find('fieldset')
 		$.each(englishToFrench,function(key,val){
 			fieldSet.append('<input type="radio" name="'+checkAnswerInputName+'" id="note-'+key+'" value="'+val+'"><label for="note-'+key+'">'+val+'<span data-count="0" class="'+answerCount+'"><br>0</span></label>')
 		})
-		fieldSet.append('<button id="check-answer" class="ui-btn ui-btn-inline">?</button>')
+		// button to check the answer
+		fieldSet.append('<button id="'+checkAnswerButton+'" class="ui-btn ui-btn-inline">?</button>')
 		//fieldSet.append('<span id="'+answerCount+'">0</span>')
 		renderOptions()
 	}
 	var prevNoteObj
 	var playAnswer = function(e){
-		$.mobile.loading("show")
+		//$.mobile.loading("show")
 		if (!isDraggableRectangle(offset(e, 'X').offsetX, offset(e, 'Y').offsetY)) {
 			setTimeout(function(){
 				startPlaying(mode === Mode.play ? currentNote : prevNoteObj)
 			},0)
 		} else {
-			$.mobile.loading("hide")
+			//$.mobile.loading("hide")
 		}
 	}
 	
@@ -392,7 +395,8 @@ NotationMaster.modelController = (function($){
 		ss+='</fieldset>'
 		return ss;
 	}
-	
+	// disable options from the select/option HTML elements that should not be
+	// available
 	var setNotesOptionsStatus = function(select, up, selectedValue) {
 		var options=select.find('option')
 		var disabledSetting=false
@@ -408,25 +412,16 @@ NotationMaster.modelController = (function($){
 	
 	var trebleLow, trebleHigh, bassLow, bassHigh
 	
+	// Update all notes limit select/option HTML elements
 	var setNotesLimitsSelects = function() {
-//		trebleLow=$('#'+clefs.treble+selectLow)
-//		trebleHigh=$('#'+clefs.treble+selectHigh)
-//		bassLow=$('#'+clefs.bass+selectLow)
-//		bassHigh=$('#'+clefs.bass+selectHigh)
 		setNotesOptionsStatusLimits($('#'+clefs.treble+selectLow), false)
 		setNotesOptionsStatusLimits($('#'+clefs.treble+selectHigh), false)
 		setNotesOptionsStatusLimits($('#'+clefs.bass+selectLow), false)
 		setNotesOptionsStatusLimits($('#'+clefs.bass+selectHigh), false)
-//		trebleLow.val(learnNotesLimit.treble.low)
-//		setNotesOptionsStatus(trebleHigh, false, trebleLow.val())
-//		trebleHigh.val(learnNotesLimit.treble.high)
-//		setNotesOptionsStatus(trebleLow, true, trebleHigh.val())
-//		bassLow.val(learnNotesLimit.bass.low)
-//		setNotesOptionsStatus(bassHigh, false, bassLow.val())
-//		bassHigh.val(learnNotesLimit.bass.high)
-//		setNotesOptionsStatus(bassLow, true, bassHigh.val())
 	}
 
+	// Set the current value of the notes limits HTML select/option
+	// group to the new value and disable options that cannot be selected
 	var setNotesOptionsStatusLimits = function(select, updateLimits) {
 		var limit, up, correspondingSelect
 		switch (select.attr('name')) {
@@ -469,7 +464,9 @@ NotationMaster.modelController = (function($){
 	var changeLimits = function(e) {
 		setNotesOptionsStatusLimits($(e.target), true)
 		initializeNotes()
-		setNotesLimitsSelects()
+		initializeLearnNotes()
+		//setNotesLimitsSelects()
+		pickANote()
 		
 	}
 
@@ -553,6 +550,7 @@ NotationMaster.modelController = (function($){
 		var l=k.length
 		var i=Math.floor(Math.random()*l);
 		var aNote=learnNotes[currentClef][k[i]]
+		aNote.getAudio(false)
 		if (k.length>1) delete learnNotes[currentClef][k[i]]
 		else learnNotes[currentClef] = createLearnNotes(currentClef) // replenish colors
 		renderMusic(aNote)
@@ -576,14 +574,20 @@ NotationMaster.modelController = (function($){
 		prevNoteObj=currentNote
 		if (mode === Mode.learn) pickANote()
 	}
-
-	var initializeNotes = function() {
-		notes[clefs.treble]=createAllNotes(clefs.treble)
+	var initializeLimits = function() {
 		learnNotesLimit[clefs.treble].high = pageTrebleHigh === "null" ? 10 : findNoteIndex(notes[clefs.treble], pageTrebleHigh)
 		learnNotesLimit[clefs.treble].low = pageTrebleLow === "null" ? 14 : findNoteIndex(notes[clefs.treble], pageTrebleLow)
-		notes[clefs.bass]=createAllNotes(clefs.bass)
 		learnNotesLimit[clefs.bass].high = pageBassHigh === "null" ? 2 : findNoteIndex(notes[clefs.bass], pageBassHigh)
 		learnNotesLimit[clefs.bass].low = pageBassLow === "null" ? 6 : findNoteIndex(notes[clefs.bass], pageBassLow)		
+	}
+	// copy the value from the notes limit HTML select/option element to the
+	// learnNotesLimit array and recreate notes and learnNotes objects
+	var initializeNotes = function() {
+		notes[clefs.treble]=createAllNotes(clefs.treble)
+		notes[clefs.bass]=createAllNotes(clefs.bass)
+	}
+	
+	var initializeLearnNotes = function() {
 		learnNotes = {
 			treble: createLearnNotes(clefs.treble),
 			bass: createLearnNotes(clefs.bass)
@@ -597,6 +601,8 @@ NotationMaster.modelController = (function($){
 		cc.append('<div data-debug="'+debug+'" id="msgDiv"/>')
 		msgDiv=$("#msgDiv")
 		initializeNotes()
+		initializeLimits()
+		initializeLearnNotes()
 		renderAnswer(cc)
 		setNotesLimitsSelects()
 		renderInitialMusic(clefs.treble);
@@ -605,8 +611,8 @@ NotationMaster.modelController = (function($){
 //		}
 		d.on('mousemove', contentCanvasSelector, displayCoord)
 		d.on('touchmove', contentCanvasSelector, displayCoord)
-		d.on('click', contentCanvasSelector+', '+checkAnswerButtonSelector, playAnswer)
-		d.on('click', checkAnswerButtonSelector, checkAnswer)
+		d.on('click', contentCanvasSelector+', '+'#'+checkAnswerButton, playAnswer)
+		d.on('click', '#'+checkAnswerButton, checkAnswer)
 	}
 	return {
 		init: init
