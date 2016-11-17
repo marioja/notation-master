@@ -1,0 +1,8 @@
+---
+applications:
+- name: notation-master-boot
+  memory: 1024M
+  stack: cflinuxfs2
+  buildpack: java_buildpack
+  host: notation
+  domain: bosh-lite.com
