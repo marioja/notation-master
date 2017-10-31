@@ -5,4 +5,4 @@ applications:
   stack: cflinuxfs2
   buildpack: java_buildpack
   host: notation
-  domain: bosh-lite.com
+  

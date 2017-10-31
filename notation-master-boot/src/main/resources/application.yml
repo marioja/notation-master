@@ -1,0 +1,8 @@
+security:
+  user:
+    password: mimi
+spring:
+  mvc:
+    view:
+      prefix: /
+      suffix: .jsp
